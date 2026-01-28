@@ -48,23 +48,26 @@ st.markdown("""
         font-weight: bold;
         font-size: 1.1em;
     }
-    button[kind="secondary"] {
-        width: 100%;
-        border-color: #ff4b4b;
-        color: #ff4b4b;
+    [data-testid="stFooter"] {
+        visibility: hidden !important;
+        display: none !important;
     }
-    button[kind="secondary"]:hover {
-        border-color: #ff0000;
-        color: #ff0000;
+
+    /* 5. DAS "MANAGE APP" / "VIEWER" ICON UNTEN RECHTS */
+    /* Dies ist der knifflige Teil, da Streamlit hier oft die Namen ändert */
+    .viewerBadge_container__1QSob {display: none !important;}
+    div[class^="viewerBadge"] {display: none !important;}
+    
+    /* Ziel: Alles was unten rechts fixiert ist */
+    div[style*="position: fixed"][style*="bottom: 0px"] {
+        display: none !important;
     }
-    .guest-warning {
-        padding: 10px;
-        background-color: #ffeeba;
-        color: #856404;
-        border-radius: 5px;
-        border: 1px solid #ffeeba;
-        font-size: 0.9em;
-        text-align: center;
+    
+    /* 6. SCHWARZE SCHRIFT IN EINGABEFELDERN ERZWINGEN */
+    input.st-ai, .stTextInput input {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        caret-color: #000000 !important;
     }
 </style>
 """, unsafe_allow_html=True)
