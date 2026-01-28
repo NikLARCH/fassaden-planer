@@ -197,7 +197,7 @@ def main():
         for f in ["logo.png", "1200x1200_1.png"]:
             if os.path.exists(f): st.image(f, use_container_width=True); break
     with col_title:
-        st.title("🌿 Profi-Datenbank Fassadenbegrünung"); st.markdown("### Fassadenbegrünung")
+        st.title("🌿 Profi-Datenbank Fassadenbegrünung");
     st.divider()
     
     df = load_data()
@@ -270,4 +270,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
