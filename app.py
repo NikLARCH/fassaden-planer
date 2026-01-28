@@ -8,22 +8,33 @@ from PIL import Image
 # --- SEITEN KONFIGURATION ---
 st.set_page_config(page_title="Fassadenbegrünung Profi-Planer", layout="wide")
 
-# --- 1. BENUTZER & PASSWÖRTER (Wer darf rein?) ---
+# --- 1. BENUTZER & PASSWÖRTER ---
 USERS = {
     "admin": "admin123",
     "demo": "gast",
     "architekt": "planer2024",
-    "praktikant": "lern123"      # Komma nicht vergessen!
+    "praktikant": "lern123"
 }
 
-# --- 2. WER IST NUR GAST? (Wer darf NICHT exportieren?) ---
-# Hier trägst du die Namen ein, die keine Excel/PDF Buttons sehen sollen.
-# Schreib die Namen exakt so wie oben in die Liste.
+# --- 2. WER IST NUR GAST? ---
 GUESTS = ["demo", "praktikant"]
 
-# --- CSS STYLING ---
+# --- CSS STYLING (HIER PASSIERT DIE MAGIE) ---
 st.markdown("""
 <style>
+    /* 1. Versteckt das Hamburger-Menü (3 Striche) und den Deploy-Button oben rechts */
+    #MainMenu {visibility: hidden;}
+    .stDeployButton {display:none;}
+    header {visibility: hidden;}
+    
+    /* 2. Versteckt den Footer (Made with Streamlit) und den roten Balken unten */
+    footer {visibility: hidden;}
+    #stDecoration {display:none;}
+    
+    /* 3. Versteckt den 'Viewer Badge' (Statistik unten rechts) */
+    .viewerBadge_container__1QSob {display:none;}
+
+    /* Styling für die App-Elemente */
     .stExpander { border: 1px solid #e0e0e0; border-radius: 5px; }
     div[data-testid="stExpander"] details summary p {
         font-weight: bold;
@@ -318,7 +329,7 @@ def main():
         st.sidebar.divider()
         st.sidebar.header("📂 Export")
         
-        # LOGIK: Ist der aktuelle Benutzer in der Liste GUESTS?
+        # HIER IST DER DIEBSTAHLSCHUTZ:
         if current_user in GUESTS:
             # Das sieht der Gast
             st.sidebar.warning("🔒 Export nur in Vollversion")
