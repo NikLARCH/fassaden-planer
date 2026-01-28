@@ -19,31 +19,34 @@ USERS = {
 # --- 2. WER IST NUR GAST? ---
 GUESTS = ["demo", "praktikant"]
 
-# --- CSS STYLING (V3 - AGGRESSIVE VARIANTE) ---
+# --- CSS STYLING (HIER IST DIE KORREKTUR) ---
 st.markdown("""
 <style>
-    /* 1. DIE TOOLBAR OBEN RECHTS (Hamburger Menü) */
-    [data-testid="stToolbar"] {
-        visibility: hidden !important;
-        display: none !important;
+    /* 1. EINGABEFELDER FIXEN (Weisser Hintergrund, Schwarze Schrift) */
+    .stTextInput > div > div > input {
+        background-color: #ffffff !important; /* Hintergrund Weiss erzwingen */
+        color: #000000 !important;            /* Schrift Schwarz erzwingen */
+        -webkit-text-fill-color: #000000 !important;
+        caret-color: #000000 !important;      /* Blinkender Cursor Schwarz */
+        border: 1px solid #ccc !important;    /* Leichter grauer Rand */
     }
+
+    /* 2. ALLES OBEN AUSBLENDEN */
+    header {visibility: hidden !important;}
+    #MainMenu {visibility: hidden !important;}
+    [data-testid="stToolbar"] {visibility: hidden !important; display: none !important;}
     
-    /* 2. DIE DEKORATION OBEN (Der bunte Balken) */
-    [data-testid="stDecoration"] {
-        visibility: hidden !important;
-        display: none !important;
-    }
-
-    /* 3. DER HEADER (Der Platzhalter oben) */
-    header {
-        visibility: hidden !important;
-        display: none !important;
-    }
-
-    /* 4. DER FOOTER (Unten) */
-    footer {
-        visibility: hidden !important;
-        display: none !important;
+    /* 3. ALLES UNTEN AUSBLENDEN */
+    footer {visibility: hidden !important; display: none !important;}
+    #stDecoration {display: none !important;}
+    [data-testid="stFooter"] {display: none !important;}
+    .viewerBadge_container__1QSob {display: none !important;}
+    
+    /* 4. DESIGN */
+    .stExpander { border: 1px solid #e0e0e0; border-radius: 5px; }
+    div[data-testid="stExpander"] details summary p {
+        font-weight: bold;
+        font-size: 1.1em;
     }
     [data-testid="stFooter"] {
         visibility: hidden !important;
