@@ -5,89 +5,77 @@ import io
 from fpdf import FPDF
 from PIL import Image
 
-# --- SEITEN KONFIGURATION (Muss die allererste Zeile sein) ---
+# --- SEITEN KONFIGURATION ---
 st.set_page_config(page_title="Fassadenbegrünung Profi-Planer", layout="wide")
 
-# --- 1. BENUTZER & PASSWÖRTER ---
+# --- KUNDEN-DATENBANK ---
 USERS = {
     "admin": "admin123",
     "demo": "gast",
     "architekt": "planer2024",
     "praktikant": "lern123"
 }
-
-# --- 2. WER IST NUR GAST? ---
 GUESTS = ["demo", "praktikant"]
 
-# --- CSS STYLING (HIER IST DIE KORREKTUR) ---
+# --- AGGRESSIVES CSS (Tarnkappen-Modus) ---
 st.markdown("""
 <style>
-    /* 1. EINGABEFELDER FIXEN (Weisser Hintergrund, Schwarze Schrift) */
-    .stTextInput > div > div > input {
-        background-color: #ffffff !important; /* Hintergrund Weiss erzwingen */
-        color: #000000 !important;            /* Schrift Schwarz erzwingen */
-        -webkit-text-fill-color: #000000 !important;
-        caret-color: #000000 !important;      /* Blinkender Cursor Schwarz */
-        border: 1px solid #ccc !important;    /* Leichter grauer Rand */
-    }
-
-    /* 2. ALLES OBEN AUSBLENDEN */
-    header {visibility: hidden !important;}
-    #MainMenu {visibility: hidden !important;}
+    /* 1. OBERE LEISTE KOMPLETT WEG */
+    header {visibility: hidden !important; display: none !important;}
+    #MainMenu {visibility: hidden !important; display: none !important;}
     [data-testid="stToolbar"] {visibility: hidden !important; display: none !important;}
+    [data-testid="stDecoration"] {visibility: hidden !important; display: none !important;}
     
-    /* 3. ALLES UNTEN AUSBLENDEN */
+    /* 2. UNTERE LEISTE & LOGOS WEG */
     footer {visibility: hidden !important; display: none !important;}
-    #stDecoration {display: none !important;}
-    [data-testid="stFooter"] {display: none !important;}
-    .viewerBadge_container__1QSob {display: none !important;}
+    [data-testid="stFooter"] {visibility: hidden !important; display: none !important;}
     
-    /* 4. DESIGN */
-    .stExpander { border: 1px solid #e0e0e0; border-radius: 5px; }
-    div[data-testid="stExpander"] details summary p {
-        font-weight: bold;
-        font-size: 1.1em;
+    /* 3. KNALLHARTE METHODE GEGEN DAS GRÜNE ICON UNTEN RECHTS */
+    .viewerBadge_container__1QSob {display: none !important;}
+    div[class^="viewerBadge"] {display: none !important;}
+    div[style*="position: fixed"][style*="bottom: 0px"] {display: none !important;}
+    
+    /* 4. WEISSE EINGABEFELDER ERZWINGEN */
+    .stTextInput > div > div > input {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        -webkit-text-fill-color: #000000 !important;
+        caret-color: #000000 !important;
+        border: 1px solid #ccc !important;
     }
-    button[kind="secondary"] {
-        width: 100%;
-        border-color: #ff4b4b;
-        color: #ff4b4b;
-    }
-    button[kind="secondary"]:hover {
-        border-color: #ff0000;
-        color: #ff0000;
-    }
+    
+    /* 5. GAST-BOX DESIGN */
     .guest-warning {
         padding: 10px;
         background-color: #ffeeba;
         color: #856404;
         border-radius: 5px;
         border: 1px solid #ffeeba;
-        font-size: 0.9em;
         text-align: center;
+    }
+    
+    /* 6. BUTTON DESIGN */
+    button[kind="secondary"] {
+        color: #ff4b4b !important;
+        border-color: #ff4b4b !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# --- FUNKTION: DATEN LADEN ---
+# --- FUNKTIONEN ---
 @st.cache_data
 def load_data():
     try:
         df = pd.read_csv("pflanzen.csv", sep=";", dtype=str)
         return df
-    except Exception as e:
-        st.error(f"Fehler beim Laden der Datenbank: {e}")
-        return pd.DataFrame()
+    except: return pd.DataFrame()
 
-# --- FUNKTION: EXCEL EXPORT ---
 def to_excel(df):
     output = io.BytesIO()
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
         df.to_excel(writer, index=False, sheet_name='Pflanzenauswahl')
-    processed_data = output.getvalue()
-    return processed_data
+    return output.getvalue()
 
-# --- HILFSFUNKTION: BILDER VORBEREITEN ---
 def prepare_image_for_pdf(image_path, unique_id):
     try:
         if not os.path.exists(image_path): return None
@@ -97,23 +85,18 @@ def prepare_image_for_pdf(image_path, unique_id):
             if img.mode == 'P': img = img.convert('RGBA')
             bg.paste(img, mask=img.split()[3])
             img = bg
-        else:
-            img = img.convert("RGB")
+        else: img = img.convert("RGB")
         temp_path = f"temp_img_{unique_id}.jpg"
         img.save(temp_path, "JPEG", quality=90)
         return temp_path
     except: return None
 
-# --- FUNKTION: PDF EXPORT ---
 def export_pdf(df_filtered):
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
-    
-    # Logo
     logo_path = "logo.png"
     if not os.path.exists(logo_path): logo_path = "1200x1200_1.png"
-    
     if os.path.exists(logo_path):
         clean_logo = prepare_image_for_pdf(logo_path, "header_logo")
         if clean_logo:
@@ -121,18 +104,13 @@ def export_pdf(df_filtered):
                 pdf.image(clean_logo, x=160, y=10, w=35)
                 os.remove(clean_logo)
             except: pass
-
-    # Titel
     pdf.set_font("Arial", "B", 16)
     pdf.set_y(20)
     pdf.cell(0, 10, txt="Pflanzenauswahl Fassadenbegrünung", ln=True, align='L')
     pdf.line(10, 32, 200, 32)
     pdf.ln(15)
-    
     for index, row in df_filtered.iterrows():
         if pdf.get_y() > 220: pdf.add_page()
-        
-        # Name
         pdf.set_font("Arial", "B", 14)
         pdf.set_fill_color(240, 240, 240)
         name = str(row.get('Name', '')).encode('latin-1', 'replace').decode('latin-1')
@@ -141,62 +119,32 @@ def export_pdf(df_filtered):
         bot = str(row.get('Botanisch', '')).encode('latin-1', 'replace').decode('latin-1')
         pdf.cell(0, 6, txt=bot, ln=True)
         pdf.ln(2)
-
-        # Bild
         orig_bp = str(row.get("Bild_URL", "")).strip()
-        img_size = 40
-        img_x = 10
-        img_y = pdf.get_y()
-        has_img = False
-        clean_path = None
-        
+        img_size = 40; img_x = 10; img_y = pdf.get_y(); has_img = False; clean_path = None
         if len(orig_bp) > 4:
             clean_path = prepare_image_for_pdf(orig_bp, index)
             if clean_path:
                 try:
-                    pdf.image(clean_path, x=img_x, y=img_y, w=img_size)
-                    has_img = True
+                    pdf.image(clean_path, x=img_x, y=img_y, w=img_size); has_img = True
                 except: pass
-
         if not has_img:
-            pdf.set_fill_color(250, 250, 250)
-            pdf.rect(img_x, img_y, img_size, img_size, 'F')
-            pdf.set_xy(img_x, img_y + 18)
-            pdf.set_font("Arial", size=8)
-            pdf.cell(img_size, 5, "Kein Bild", align='C')
-
-        if clean_path and os.path.exists(clean_path):
-            try: os.remove(clean_path)
-            except: pass
-
-        # Infos
-        text_x = 55
-        pdf.set_xy(text_x, img_y)
-        pdf.set_font("Arial", size=10)
+            pdf.set_fill_color(250, 250, 250); pdf.rect(img_x, img_y, img_size, img_size, 'F')
+            pdf.set_xy(img_x, img_y + 18); pdf.set_font("Arial", size=8); pdf.cell(img_size, 5, "Kein Bild", align='C')
+        if clean_path and os.path.exists(clean_path): os.remove(clean_path)
+        text_x = 55; pdf.set_xy(text_x, img_y); pdf.set_font("Arial", size=10)
         kurz_infos = ["Standort", "Klettertyp", "Wasserbedarf", "Winterhaerte"]
         for k in kurz_infos:
             val = str(row.get(k, '-')).encode('latin-1', 'replace').decode('latin-1')
             lbl = k.replace("_", " ")
-            pdf.set_font("Arial", "B", 10)
-            pdf.cell(35, 5, f"{lbl}:", ln=False)
-            pdf.set_font("Arial", "", 10)
-            pdf.cell(0, 5, val, ln=True)
-            pdf.set_x(text_x)
-
-        # Details
+            pdf.set_font("Arial", "B", 10); pdf.cell(35, 5, f"{lbl}:", ln=False)
+            pdf.set_font("Arial", "", 10); pdf.cell(0, 5, val, ln=True); pdf.set_x(text_x)
         pdf.set_y(max(pdf.get_y(), img_y + img_size + 5))
         desc = str(row.get('Beschreibung', '')).encode('latin-1', 'replace').decode('latin-1')
         if len(desc) > 3:
-            pdf.set_font("Arial", "B", 10)
-            pdf.cell(0, 5, "Beschreibung:", ln=True)
-            pdf.set_font("Arial", "", 10)
-            pdf.multi_cell(0, 5, desc)
-            pdf.ln(2)
-
-        pdf.set_font("Arial", "B", 8)
-        pdf.cell(0, 5, "Vollständige Daten:", ln=True)
-        pdf.set_font("Arial", "", 8)
-        all_details = ""
+            pdf.set_font("Arial", "B", 10); pdf.cell(0, 5, "Beschreibung:", ln=True)
+            pdf.set_font("Arial", "", 10); pdf.multi_cell(0, 5, desc); pdf.ln(2)
+        pdf.set_font("Arial", "B", 8); pdf.cell(0, 5, "Vollständige Daten:", ln=True)
+        pdf.set_font("Arial", "", 8); all_details = ""
         exclude = ["Name", "Botanisch", "Bild_URL", "Beschreibung"] + kurz_infos
         for col in df_filtered.columns:
             if col not in exclude:
@@ -204,16 +152,10 @@ def export_pdf(df_filtered):
                 if val != "nan" and val != "-":
                     val_c = val.encode('latin-1', 'replace').decode('latin-1')
                     all_details += f"[{col.replace('_',' ')}: {val_c}]  "
-        pdf.multi_cell(0, 4, all_details)
-        pdf.ln(3)
-        pdf.set_draw_color(200, 200, 200)
-        pdf.line(10, pdf.get_y(), 200, pdf.get_y())
-        pdf.set_draw_color(0,0,0)
-        pdf.ln(5)
-    
+        pdf.multi_cell(0, 4, all_details); pdf.ln(3)
+        pdf.set_draw_color(200, 200, 200); pdf.line(10, pdf.get_y(), 200, pdf.get_y()); pdf.set_draw_color(0,0,0); pdf.ln(5)
     return pdf.output(dest='S').encode('latin-1')
 
-# --- RESET CALLBACK ---
 def reset_all_filters():
     st.session_state["f_standort"] = []
     st.session_state["f_typ"] = []
@@ -224,12 +166,11 @@ def reset_all_filters():
     if "f_boden" in st.session_state: st.session_state["f_boden"] = []
     if "f_wuchs" in st.session_state: st.session_state["f_wuchs"] = []
 
-# --- LOGIN LOGIK ---
+# --- LOGIN ---
 def check_login():
     if "logged_in" not in st.session_state:
         st.session_state["logged_in"] = False
         st.session_state["current_user"] = None 
-
     if not st.session_state["logged_in"]:
         st.markdown("## 🔒 Geschützter Bereich")
         st.info("Bitte melden Sie sich an.")
@@ -242,74 +183,48 @@ def check_login():
                     st.session_state["logged_in"] = True
                     st.session_state["current_user"] = username 
                     st.rerun()
-                else:
-                    st.error("Falscher Benutzername oder Passwort")
+                else: st.error("Falsch")
         return False
     return True
 
-# --- HAUPTPROGRAMM ---
+# --- MAIN ---
 def main():
     if not check_login(): return
-
     current_user = st.session_state.get("current_user", "Gast")
-
+    
     col_logo, col_title = st.columns([1, 4])
     with col_logo:
-        logo_files = ["logo.png", "1200x1200_1.png"]
-        for f in logo_files:
-            if os.path.exists(f):
-                st.image(f, use_container_width=True)
-                break
+        for f in ["logo.png", "1200x1200_1.png"]:
+            if os.path.exists(f): st.image(f, use_container_width=True); break
     with col_title:
-        st.title("🌿 Profi-Datenbank")
-        st.markdown("### Fassadenbegrünung")
-
+        st.title("🌿 Profi-Datenbank"); st.markdown("### Fassadenbegrünung")
     st.divider()
+    
     df = load_data()
-
     if not df.empty:
-        # --- SIDEBAR OBEN ---
         st.sidebar.caption(f"Angemeldet als: **{current_user}**")
         if st.sidebar.button("🔒 Abmelden"):
             st.session_state["logged_in"] = False
             st.session_state["current_user"] = None
             st.rerun()
         st.sidebar.markdown("---")
-        
-        # --- FILTER ---
         st.sidebar.header("🔍 Filter")
         st.sidebar.button("🔄 Reset", on_click=reset_all_filters)
         
-        standorte = []
-        if "Standort" in df.columns:
-            opts = sorted(list(set(df["Standort"].dropna().astype(str))))
-            standorte = st.sidebar.multiselect("Standort", opts, key="f_standort")
-        klettertyp = []
-        if "Klettertyp" in df.columns:
-            opts = sorted(list(set(df["Klettertyp"].dropna().astype(str))))
-            klettertyp = st.sidebar.multiselect("Klettertyp", opts, key="f_typ")
+        standorte = []; klettertyp = []
+        if "Standort" in df.columns: standorte = st.sidebar.multiselect("Standort", sorted(list(set(df["Standort"].dropna().astype(str)))), key="f_standort")
+        if "Klettertyp" in df.columns: klettertyp = st.sidebar.multiselect("Klettertyp", sorted(list(set(df["Klettertyp"].dropna().astype(str)))), key="f_typ")
         c1, c2 = st.sidebar.columns(2)
         immergruen = c1.radio("Immergrün", ["Alle", "Ja", "Nein"], key="f_immergruen")
         insekten = c2.checkbox("🐝 Insekten", key="f_insekten")
-
+        
         st.sidebar.markdown("---")
-        with st.sidebar.expander("➕ Weitere Eigenschaften", expanded=False):
-            wasser = []
-            if "Wasserbedarf" in df.columns:
-                opts = sorted(list(set(df["Wasserbedarf"].dropna().astype(str))))
-                wasser = st.multiselect("Wasserbedarf", opts, key="f_wasser")
-            winter = []
-            if "Winterhaerte" in df.columns:
-                opts = sorted(list(set(df["Winterhaerte"].dropna().astype(str))))
-                winter = st.multiselect("Winterhärte", opts, key="f_winter")
-            boden = []
-            if "Boden" in df.columns:
-                opts = sorted(list(set(df["Boden"].dropna().astype(str))))
-                boden = st.multiselect("Bodenanspruch", opts, key="f_boden")
-            wuchs = []
-            if "Wuchsstaerke" in df.columns:
-                opts = sorted(list(set(df["Wuchsstaerke"].dropna().astype(str))))
-                wuchs = st.multiselect("Wuchsstärke", opts, key="f_wuchs")
+        with st.sidebar.expander("➕ Weitere Eigenschaften"):
+            wasser = []; winter = []; boden = []; wuchs = []
+            if "Wasserbedarf" in df.columns: wasser = st.multiselect("Wasserbedarf", sorted(list(set(df["Wasserbedarf"].dropna().astype(str)))), key="f_wasser")
+            if "Winterhaerte" in df.columns: winter = st.multiselect("Winterhärte", sorted(list(set(df["Winterhaerte"].dropna().astype(str)))), key="f_winter")
+            if "Boden" in df.columns: boden = st.multiselect("Bodenanspruch", sorted(list(set(df["Boden"].dropna().astype(str)))), key="f_boden")
+            if "Wuchsstaerke" in df.columns: wuchs = st.multiselect("Wuchsstärke", sorted(list(set(df["Wuchsstaerke"].dropna().astype(str)))), key="f_wuchs")
 
         mask = pd.Series([True] * len(df))
         if standorte: mask &= df["Standort"].isin(standorte)
@@ -320,13 +235,9 @@ def main():
         if winter: mask &= df["Winterhaerte"].isin(winter)
         if boden: mask &= df["Boden"].isin(boden)
         if wuchs: mask &= df["Wuchsstaerke"].isin(wuchs)
-
         df_filtered = df[mask]
         
-        # --- EXPORT BEREICH ---
-        st.sidebar.divider()
-        st.sidebar.header("📂 Export")
-        
+        st.sidebar.divider(); st.sidebar.header("📂 Export")
         if current_user in GUESTS:
             st.sidebar.warning("🔒 Export nur in Vollversion")
             st.sidebar.markdown("<div class='guest-warning'>Bitte Vollversion erwerben für Excel & PDF Export</div>", unsafe_allow_html=True)
@@ -336,7 +247,6 @@ def main():
                 with st.spinner("PDF wird generiert..."):
                     st.sidebar.download_button("⬇️ Download", export_pdf(df_filtered), "report.pdf", "application/pdf")
 
-        # --- ANZEIGE ---
         st.success(f"{len(df_filtered)} Pflanzen")
         cols = st.columns(3)
         for idx, (i, row) in enumerate(df_filtered.iterrows()):
@@ -345,23 +255,18 @@ def main():
                     st.subheader(str(row.get("Name", "Unbekannt")))
                     st.caption(str(row.get("Botanisch", "-")))
                     bp = str(row.get("Bild_URL", "")).strip()
-                    if len(bp) > 4 and os.path.exists(bp):
-                        st.image(bp, use_container_width=True)
-                    else:
-                        st.info("Kein Bild verfügbar")
+                    if len(bp) > 4 and os.path.exists(bp): st.image(bp, use_container_width=True)
+                    else: st.info("Kein Bild verfügbar")
                     st.markdown(f"**Standort:** {row.get('Standort', '-')}\n**Typ:** {row.get('Klettertyp', '-')}")
                     with st.expander("📋 Details"):
                         desc = str(row.get("Beschreibung", ""))
-                        if desc != "nan":
-                            st.write(f"**Beschreibung:** {desc}")
-                            st.markdown("---")
+                        if desc != "nan": st.write(f"**Beschreibung:** {desc}"); st.markdown("---")
                         for col in df.columns:
                             if col not in ["Name", "Botanisch", "Bild_URL", "Beschreibung"]:
-                                val = str(row[col])
+                                val = str(row[col]); 
                                 if val == "nan": val = "-"
                                 st.markdown(f"**{col.replace('_', ' ')}:** {val}")
-    else:
-        st.warning("Keine Daten gefunden.")
+    else: st.warning("Keine Daten gefunden.")
 
 if __name__ == "__main__":
     main()
