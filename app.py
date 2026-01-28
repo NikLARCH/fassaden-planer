@@ -5,7 +5,7 @@ import io
 from fpdf import FPDF
 from PIL import Image
 
-# --- SEITEN KONFIGURATION ---
+# --- SEITEN KONFIGURATION (Muss die allererste Zeile sein) ---
 st.set_page_config(page_title="Fassadenbegrünung Profi-Planer", layout="wide")
 
 # --- 1. BENUTZER & PASSWÖRTER ---
@@ -19,37 +19,52 @@ USERS = {
 # --- 2. WER IST NUR GAST? ---
 GUESTS = ["demo", "praktikant"]
 
-# --- CSS STYLING (TOTAL STEALTH MODE) ---
+# --- CSS STYLING (HIER IST DIE KORREKTUR) ---
 st.markdown("""
 <style>
-    /* 1. Alles oben ausblenden */
+    /* 1. EINGABEFELDER FIXEN (Weisser Hintergrund, Schwarze Schrift) */
+    .stTextInput > div > div > input {
+        background-color: #ffffff !important; /* Hintergrund Weiss erzwingen */
+        color: #000000 !important;            /* Schrift Schwarz erzwingen */
+        -webkit-text-fill-color: #000000 !important;
+        caret-color: #000000 !important;      /* Blinkender Cursor Schwarz */
+        border: 1px solid #ccc !important;    /* Leichter grauer Rand */
+    }
+
+    /* 2. ALLES OBEN AUSBLENDEN */
     header {visibility: hidden !important;}
     #MainMenu {visibility: hidden !important;}
     [data-testid="stToolbar"] {visibility: hidden !important; display: none !important;}
     
-    /* 2. Alles unten ausblenden (Footer & Decoration) */
+    /* 3. ALLES UNTEN AUSBLENDEN */
     footer {visibility: hidden !important; display: none !important;}
     #stDecoration {display: none !important;}
     [data-testid="stFooter"] {display: none !important;}
-    
-    /* 3. Speziell für die unteren Icons (Viewer Badge & Manage Button) */
     .viewerBadge_container__1QSob {display: none !important;}
-    div[class^="viewerBadge"] {display: none !important;}
     
-    /* Versucht, fixe Buttons unten rechts zu treffen */
-    div[style*="position: fixed"][style*="bottom: 0"] {
-        display: none !important;
-    }
-    
-    /* Dein normales Styling */
+    /* 4. DESIGN */
     .stExpander { border: 1px solid #e0e0e0; border-radius: 5px; }
     div[data-testid="stExpander"] details summary p {
         font-weight: bold;
         font-size: 1.1em;
     }
-    .stTextInput > div > div > input {
-        color: #000000 !important;
-        -webkit-text-fill-color: #000000 !important;
+    button[kind="secondary"] {
+        width: 100%;
+        border-color: #ff4b4b;
+        color: #ff4b4b;
+    }
+    button[kind="secondary"]:hover {
+        border-color: #ff0000;
+        color: #ff0000;
+    }
+    .guest-warning {
+        padding: 10px;
+        background-color: #ffeeba;
+        color: #856404;
+        border-radius: 5px;
+        border: 1px solid #ffeeba;
+        font-size: 0.9em;
+        text-align: center;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -308,17 +323,14 @@ def main():
 
         df_filtered = df[mask]
         
-        # --- EXPORT BEREICH (MIT DEM SCHUTZ) ---
+        # --- EXPORT BEREICH ---
         st.sidebar.divider()
         st.sidebar.header("📂 Export")
         
-        # HIER IST DER DIEBSTAHLSCHUTZ:
         if current_user in GUESTS:
-            # Das sieht der Gast
             st.sidebar.warning("🔒 Export nur in Vollversion")
             st.sidebar.markdown("<div class='guest-warning'>Bitte Vollversion erwerben für Excel & PDF Export</div>", unsafe_allow_html=True)
         else:
-            # Das sehen zahlende Kunden (und Admin)
             st.sidebar.download_button("💾 Excel", to_excel(df_filtered), "pflanzen.xlsx")
             if st.sidebar.button("📄 PDF"):
                 with st.spinner("PDF wird generiert..."):
