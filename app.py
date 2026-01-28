@@ -19,22 +19,36 @@ USERS = {
 # --- 2. WER IST NUR GAST? ---
 GUESTS = ["demo", "praktikant"]
 
-# --- CSS STYLING (HIER PASSIERT DIE MAGIE) ---
+# --- CSS STYLING (STEALTH MODE) ---
 st.markdown("""
 <style>
-    /* 1. Versteckt das Hamburger-Menü (3 Striche) und den Deploy-Button oben rechts */
-    #MainMenu {visibility: hidden;}
-    .stDeployButton {display:none;}
-    header {visibility: hidden;}
+    /* 1. KOPFZEILE & MENÜS AUSBLENDEN */
+    #MainMenu {visibility: hidden !important;}
+    header {visibility: hidden !important;}
+    [data-testid="stToolbar"] {visibility: hidden !important; display: none !important;}
+    [data-testid="stDecoration"] {visibility: hidden !important; display: none !important;}
     
-    /* 2. Versteckt den Footer (Made with Streamlit) und den roten Balken unten */
-    footer {visibility: hidden;}
-    #stDecoration {display:none;}
+    /* 2. FUSSZEILE & BRANDING AUSBLENDEN */
+    footer {visibility: hidden !important; display: none !important;}
+    [data-testid="stFooter"] {visibility: hidden !important; display: none !important;}
     
-    /* 3. Versteckt den 'Viewer Badge' (Statistik unten rechts) */
-    .viewerBadge_container__1QSob {display:none;}
+    /* 3. DAS GRÜNE ICON / VIEWER BADGE UNTEN RECHTS */
+    .viewerBadge_container__1QSob {visibility: hidden !important; display: none !important;}
+    div[class^="viewerBadge"] {visibility: hidden !important; display: none !important;}
+    
+    /* 4. SICHERHEITSHALBER: ALLE LINKS ZU STREAMLIT AUSBLENDEN */
+    a[href*="streamlit.io"] {visibility: hidden !important; display: none !important;}
 
-    /* Styling für die App-Elemente */
+    /* --- DEIN NORMALES DESIGN AB HIER --- */
+    
+    /* Login Box Styling */
+    .stTextInput > div > div > input {
+        background-color: #f0f2f6;
+        color: #000000 !important;
+        -webkit-text-fill-color: #000000 !important;
+        caret-color: #000000 !important;
+    }
+    
     .stExpander { border: 1px solid #e0e0e0; border-radius: 5px; }
     div[data-testid="stExpander"] details summary p {
         font-weight: bold;
@@ -49,16 +63,6 @@ st.markdown("""
         border-color: #ff0000;
         color: #ff0000;
     }
-    
-    /* Login Box Styling */
-    .stTextInput > div > div > input {
-        background-color: #f0f2f6;
-        color: #000000 !important;
-        -webkit-text-fill-color: #000000 !important;
-        caret-color: #000000 !important;
-    }
-
-    /* Hinweis-Box für Gäste */
     .guest-warning {
         padding: 10px;
         background-color: #ffeeba;
