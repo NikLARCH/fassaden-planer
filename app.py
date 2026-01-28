@@ -19,58 +19,37 @@ USERS = {
 # --- 2. WER IST NUR GAST? ---
 GUESTS = ["demo", "praktikant"]
 
-# --- CSS STYLING (STEALTH MODE) ---
+# --- CSS STYLING (TOTAL STEALTH MODE) ---
 st.markdown("""
 <style>
-    /* 1. KOPFZEILE & MENÜS AUSBLENDEN */
-    #MainMenu {visibility: hidden !important;}
+    /* 1. Alles oben ausblenden */
     header {visibility: hidden !important;}
+    #MainMenu {visibility: hidden !important;}
     [data-testid="stToolbar"] {visibility: hidden !important; display: none !important;}
-    [data-testid="stDecoration"] {visibility: hidden !important; display: none !important;}
     
-    /* 2. FUSSZEILE & BRANDING AUSBLENDEN */
+    /* 2. Alles unten ausblenden (Footer & Decoration) */
     footer {visibility: hidden !important; display: none !important;}
-    [data-testid="stFooter"] {visibility: hidden !important; display: none !important;}
+    #stDecoration {display: none !important;}
+    [data-testid="stFooter"] {display: none !important;}
     
-    /* 3. DAS GRÜNE ICON / VIEWER BADGE UNTEN RECHTS */
-    .viewerBadge_container__1QSob {visibility: hidden !important; display: none !important;}
-    div[class^="viewerBadge"] {visibility: hidden !important; display: none !important;}
+    /* 3. Speziell für die unteren Icons (Viewer Badge & Manage Button) */
+    .viewerBadge_container__1QSob {display: none !important;}
+    div[class^="viewerBadge"] {display: none !important;}
     
-    /* 4. SICHERHEITSHALBER: ALLE LINKS ZU STREAMLIT AUSBLENDEN */
-    a[href*="streamlit.io"] {visibility: hidden !important; display: none !important;}
-
-    /* --- DEIN NORMALES DESIGN AB HIER --- */
-    
-    /* Login Box Styling */
-    .stTextInput > div > div > input {
-        background-color: #f0f2f6;
-        color: #000000 !important;
-        -webkit-text-fill-color: #000000 !important;
-        caret-color: #000000 !important;
+    /* Versucht, fixe Buttons unten rechts zu treffen */
+    div[style*="position: fixed"][style*="bottom: 0"] {
+        display: none !important;
     }
     
+    /* Dein normales Styling */
     .stExpander { border: 1px solid #e0e0e0; border-radius: 5px; }
     div[data-testid="stExpander"] details summary p {
         font-weight: bold;
         font-size: 1.1em;
     }
-    button[kind="secondary"] {
-        width: 100%;
-        border-color: #ff4b4b;
-        color: #ff4b4b;
-    }
-    button[kind="secondary"]:hover {
-        border-color: #ff0000;
-        color: #ff0000;
-    }
-    .guest-warning {
-        padding: 10px;
-        background-color: #ffeeba;
-        color: #856404;
-        border-radius: 5px;
-        border: 1px solid #ffeeba;
-        font-size: 0.9em;
-        text-align: center;
+    .stTextInput > div > div > input {
+        color: #000000 !important;
+        -webkit-text-fill-color: #000000 !important;
     }
 </style>
 """, unsafe_allow_html=True)
