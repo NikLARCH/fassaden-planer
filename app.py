@@ -5,7 +5,7 @@ import io
 from fpdf import FPDF
 from PIL import Image
 
-# --- SEITEN KONFIGURATION ---
+# --- SEITEN KONFIGURATION (Muss die allererste Zeile sein) ---
 st.set_page_config(page_title="Fassadenbegrünung Profi-Planer", layout="wide")
 
 # --- 1. BENUTZER & PASSWÖRTER ---
@@ -19,58 +19,52 @@ USERS = {
 # --- 2. WER IST NUR GAST? ---
 GUESTS = ["demo", "praktikant"]
 
-# --- CSS STYLING (STEALTH MODE) ---
+# --- CSS STYLING (V3 - AGGRESSIVE VARIANTE) ---
 st.markdown("""
 <style>
-    /* 1. KOPFZEILE & MENÜS AUSBLENDEN */
-    #MainMenu {visibility: hidden !important;}
-    header {visibility: hidden !important;}
-    [data-testid="stToolbar"] {visibility: hidden !important; display: none !important;}
-    [data-testid="stDecoration"] {visibility: hidden !important; display: none !important;}
+    /* 1. DIE TOOLBAR OBEN RECHTS (Hamburger Menü) */
+    [data-testid="stToolbar"] {
+        visibility: hidden !important;
+        display: none !important;
+    }
     
-    /* 2. FUSSZEILE & BRANDING AUSBLENDEN */
-    footer {visibility: hidden !important; display: none !important;}
-    [data-testid="stFooter"] {visibility: hidden !important; display: none !important;}
-    
-    /* 3. DAS GRÜNE ICON / VIEWER BADGE UNTEN RECHTS */
-    .viewerBadge_container__1QSob {visibility: hidden !important; display: none !important;}
-    div[class^="viewerBadge"] {visibility: hidden !important; display: none !important;}
-    
-    /* 4. SICHERHEITSHALBER: ALLE LINKS ZU STREAMLIT AUSBLENDEN */
-    a[href*="streamlit.io"] {visibility: hidden !important; display: none !important;}
+    /* 2. DIE DEKORATION OBEN (Der bunte Balken) */
+    [data-testid="stDecoration"] {
+        visibility: hidden !important;
+        display: none !important;
+    }
 
-    /* --- DEIN NORMALES DESIGN AB HIER --- */
+    /* 3. DER HEADER (Der Platzhalter oben) */
+    header {
+        visibility: hidden !important;
+        display: none !important;
+    }
+
+    /* 4. DER FOOTER (Unten) */
+    footer {
+        visibility: hidden !important;
+        display: none !important;
+    }
+    [data-testid="stFooter"] {
+        visibility: hidden !important;
+        display: none !important;
+    }
+
+    /* 5. DAS "MANAGE APP" / "VIEWER" ICON UNTEN RECHTS */
+    /* Dies ist der knifflige Teil, da Streamlit hier oft die Namen ändert */
+    .viewerBadge_container__1QSob {display: none !important;}
+    div[class^="viewerBadge"] {display: none !important;}
     
-    /* Login Box Styling */
-    .stTextInput > div > div > input {
-        background-color: #f0f2f6;
+    /* Ziel: Alles was unten rechts fixiert ist */
+    div[style*="position: fixed"][style*="bottom: 0px"] {
+        display: none !important;
+    }
+    
+    /* 6. SCHWARZE SCHRIFT IN EINGABEFELDERN ERZWINGEN */
+    input.st-ai, .stTextInput input {
+        background-color: #ffffff !important;
         color: #000000 !important;
-        -webkit-text-fill-color: #000000 !important;
         caret-color: #000000 !important;
-    }
-    
-    .stExpander { border: 1px solid #e0e0e0; border-radius: 5px; }
-    div[data-testid="stExpander"] details summary p {
-        font-weight: bold;
-        font-size: 1.1em;
-    }
-    button[kind="secondary"] {
-        width: 100%;
-        border-color: #ff4b4b;
-        color: #ff4b4b;
-    }
-    button[kind="secondary"]:hover {
-        border-color: #ff0000;
-        color: #ff0000;
-    }
-    .guest-warning {
-        padding: 10px;
-        background-color: #ffeeba;
-        color: #856404;
-        border-radius: 5px;
-        border: 1px solid #ffeeba;
-        font-size: 0.9em;
-        text-align: center;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -329,17 +323,14 @@ def main():
 
         df_filtered = df[mask]
         
-        # --- EXPORT BEREICH (MIT DEM SCHUTZ) ---
+        # --- EXPORT BEREICH ---
         st.sidebar.divider()
         st.sidebar.header("📂 Export")
         
-        # HIER IST DER DIEBSTAHLSCHUTZ:
         if current_user in GUESTS:
-            # Das sieht der Gast
             st.sidebar.warning("🔒 Export nur in Vollversion")
             st.sidebar.markdown("<div class='guest-warning'>Bitte Vollversion erwerben für Excel & PDF Export</div>", unsafe_allow_html=True)
         else:
-            # Das sehen zahlende Kunden (und Admin)
             st.sidebar.download_button("💾 Excel", to_excel(df_filtered), "pflanzen.xlsx")
             if st.sidebar.button("📄 PDF"):
                 with st.spinner("PDF wird generiert..."):
